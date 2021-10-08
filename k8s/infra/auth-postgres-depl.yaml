@@ -1,0 +1,40 @@
+apiVersion: apps/v1 
+kind: Deployment
+metadata:
+  name: auth-postgres-depl
+spec:
+  selector:
+    matchLabels:
+      app: auth-postgres
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: auth-postgres
+    spec:
+      containers:
+        - image: postgres:9.6
+          name: auth-postgres
+          env:
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-superuser-password-secret
+                  key: POSTGRES_PASSWORD
+          ports:
+            - containerPort: 5432
+              name: postgres
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-postgres-srv
+spec:
+  selector:
+    app: auth-postgres
+  ports:
+    - name: db
+      protocol: TCP
+      port: 5432
+      targetPort: 5432
